@@ -9,10 +9,19 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<DataContext>(opt =>
+builder.Services.AddDbContext<AppDbContext>(opt =>
 {
     opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+builder.Services.AddCors(opt => {
+    opt.AddPolicy("CorsPolicy", policy =>
+    {
+        policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000");
+    });
+
+});
+
 
 var app = builder.Build();
 
@@ -23,7 +32,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseAuthorization();
+app.UseCors("CorsPolicy");
 
 app.MapControllers();
 
@@ -31,7 +40,7 @@ using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 try
 {
-    var context = services.GetRequiredService<DataContext>();
+    var context = services.GetRequiredService<DbContext>();
     await context.Database.MigrateAsync();
     await Seed.SeedData(context);
 }

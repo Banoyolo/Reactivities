@@ -5,24 +5,23 @@ using Persistence;
 
 namespace API.Controllers
 {
-    public class ActivitiesController : BaseApiController
+    public class ActivitiesController(AppDbContext context) : BaseApiController
     {
-        private readonly DataContext _context;
-        public ActivitiesController(DataContext context)
-        {
-            _context = context;
-        }
-
-        [HttpGet] //api/activities
+       
+        [HttpGet] 
         public async Task<ActionResult<List<Activity>>> GetActivities()
         {
-            return await _context.Activities.ToListAsync();
+            return await context.Activities.ToListAsync();
         }
 
-       [HttpGet("{id}")] //api/activities/fdfkdffdfd
-       public async Task<ActionResult<Activity>> GetActivity(Guid id)
+       [HttpGet("{id}")] 
+       public async Task<ActionResult<Activity>> GetActivityDetail(string id)
        {
-        return await _context.Activities.FindAsync(id);
+        var activity = await context.Activities.FindAsync(id);
+
+        if (activity == null) return NotFound();
+
+        return activity;
        }
     }
 }
